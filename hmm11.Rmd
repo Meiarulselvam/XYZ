@@ -1,0 +1,319 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+
+library(plotrix)
+library(R2HTML)
+library(ggplot2)
+library(plotly)
+library(plot3D)
+library(dplyr)
+library(tidyverse)
+library(Hmisc)
+#1
+twitter = read.csv("M01_quasi_twitter.csv")
+
+
+```
+
+```{r}
+#a
+hist(x=Twitter$friends_count,xlab = "Count") 
+
+#The histogram shows that its not normally distributed and its skewed to the left
+
+```
+
+```{r}
+#b
+summary(Twitter$friends_count) 
+
+```
+
+```{r}
+#c
+
+describe(Twitter$friends_count)
+
+sapply(Twitter, function(x) sum(is.na(x))) 
+
+#it can be seen that there are no missing values in the Friends_count variable
+
+```
+
+```{r}
+#d
+
+scatter3D(Twitter$created_at_year, Twitter$education, Twitter$age, pch = 18, bty = "u", colkey = FALSE, 
+          main ="3D Scatter Plot", col.panel ="steelblue", expand =0.4, 
+          col.grid = "darkblue")
+
+```
+
+```{r}
+#e
+
+slices <- c(650, 1000, 900, 300, 14900) 
+lbls <- c("UK", "Canada", "India", "Australia", "US") 
+pct <- round(slices/sum(slices)*100) 
+lbls <- paste(lbls, pct) # add percents to labels  
+lbls <- paste(lbls,"%",sep="") # ad % to labels  
+pie3D(slices,labels = lbls, explode=0.5,main="3D PIE") 
+chart<-c(pie(slices,labels = lbls, col=rainbow(length(lbls)), 
+             main="Pie Chart of Countries"),pie3D(slices,labels = lbls, explode=0.5,main="3D PIE")) 
+
+```
+
+```{r}
+#f
+
+plot(density(Twitter$created_at_year),xlim = c(2006,2017),main = "Created Year Kernel Density Plot") 
+
+#The plot is not smooth,it varies from year to year with the highest values recorded during year 2009
+
+```
+
+```{r}
+#problem 2
+get_data <- readLines("http://lib.stat.cmu.edu/DASL/Datafiles/Cereals.html")
+pre.lines <- grep("PRE",get_data)
+cereals <- read.table(text=get_data[(pre.lines[1]+1):(pre.lines[2]-1)],
+                      header=TRUE)
+```
+
+```{r}
+#a
+
+#nominal Variables
+#mfr,name,shelf
+##type,vitamin-ordinal
+#calories,protiens,fat,sodium,fiber,carbo,sugar,potass,vitamins,cups,rating-numerical
+```
+
+```{r}
+#b
+
+summary.data.frame(cereals, na.rm = TRUE)
+```
+
+```{r}
+#c
+
+hist(x=cereals$calories,xlab = "cal")
+
+hist(x=cereals$protein,xlab = "protien")
+
+hist(x=cereals$fat,xlab = "fat")
+
+hist(x=cereals$sodium,xlab = "sodium")
+
+hist(x=cereals$fiber,xlab = "fiber")
+
+hist(x=cereals$carbo,xlab = "carbo")
+
+hist(x=cereals$sugars,xlab = "sugars")
+
+hist(x=cereals$potass,xlab = "potass")
+
+hist(x=cereals$vitamins,xlab = "vitamin")
+
+hist(x=cereals$calories,xlab = "cal")
+
+hist(x=cereals$weight,xlab = "wt")
+
+hist(x=cereals$cups,xlab = "cups")
+
+hist(x=cereals$rating,xlab = "rating")
+
+#(1) rating has the largest variability
+#(2) weight is highly skewed
+#(3) fat is distributed to the extremes 
+```
+
+```{r}
+#d
+
+boxplot(calories~type,data=cereals,main="calories",
+        font.main=5, cex.main=1.2, xlab="type", ylab="cal", 
+        font.lab=5, col="darkblue")
+
+#The hot cereals have low calories compared to the cold ones
+```
+
+```{r}
+#e
+
+boxplot(rating~shelf,data=cereals,main="rating",
+        font.main=5, cex.main=1.2, xlab="shelf", ylab="rating", 
+        font.lab=5, col="darkblue")
+
+#the second category of shelf height seems to have lesser ratings. so, it is better to drop it
+```
+
+```{r}
+#f
+
+cerealsnum <-cereals[,4:16]
+cerealsnum1 <- cerealsnum[,-13]
+
+cor(cerealsnum1)
+
+csnum <- cor(cerealsnum1)
+
+plot(csnum)
+
+#(1) highly corelated variables are potass and fiber
+#(2)by removing the variables whose corelation co-efficients are high
+#(3)by normalising the data all the variables will be given equal importance, so the corelation co-efficients will change to a certain extent
+```
+
+```{r}
+#g
+#PC1 represents the covariance co-efficient for each variable
+```
+
+```{r}
+#Problem 3
+
+Boston <-  read.csv("BostonHousing.csv")
+```
+
+```{r}
+#a
+
+prepr_boshos <- scale(Boston)
+
+View(prepr_boshos)
+
+#scaling is used to divide the variables by its standard deviation and its better for normalization
+
+```
+
+```{r}
+#b
+boshos <- filter(Boston, MEDV>30)
+
+boshos1 <- boshos[, -14]
+
+bh <- cor(boshos1)
+
+bh1 <- as.data.frame(as.table(bh))
+
+bh2 <- bh1[order(-abs(bh1$Freq)),]
+
+bh3 <- bh2 %>%
+  filter(bh2$Freq!=1) %>%
+  head(5)
+
+View(bh3)
+
+```
+
+```{r}
+#c
+
+#with original data
+bosh <- Boston[,-c(4,9,14)]
+
+View(bosh)
+
+pcs1 <- prcomp(na.omit(bosh))
+summary(pcs1)
+pcs1$rot[,1:2]
+
+#with preprocessed data
+pcs2 <- prcomp(na.omit(prepr_boshos))
+summary(pcs2)
+pcs2$rot[,1:2]
+
+```
+
+```{r}
+#d
+
+pc3 <- pcs1$rot[,1:2]
+
+pc4 <- pcs2$rot[,1:2]
+
+plot(pc3, mapping = aes(x = PC1 ,y = PC2))
+
+plot(pc4, mapping = aes(x = PC1,y = PC2))
+
+```
+
+```{r}
+#e
+#The new features that contribute to pcs1 are PC1, PC2, PC3, PC4, PC5, PC6, PC7, PC8, PC9, PC10, PC11
+
+#The new features that contribute to pcs2 are PC7, PC8, PC9, PC10, PC11, PC12, PC13, PC14 
+
+```
+
+```{r}
+#problem 4
+
+Win = read.csv("Wine.csv")
+```
+
+```{r}
+#a
+
+wine1 <- prcomp(Win[,-1])
+summary(wine1)
+wine1$rot[,1:4]
+
+#The values are not scaled
+```
+
+```{r}
+#b
+#the values were not normalised for the above data as there was a vast difference in the PC1, but normalising would give equal importance to all the variables leading to extra difference.
+```
+
+```{r}
+#problem 5
+#a
+X1 <- c(8,0,10,10,2)
+X2 <- c(-20,-1,-19,-20,0)
+
+mat <- data.frame(X1,X2)
+
+sapply(mat, mean)
+
+cov(mat)
+
+mat1 <- cov(mat)
+```
+
+```{r}
+#b
+
+eigen(mat1)$values
+```
+
+```{r}
+#C
+
+sapply(mat, sd)
+
+local.data <- cutHyperPlane(Ns = 10, d = 1, n = 2, sd = 10.51)
+essLocalDimEst(local.data, ver = 'a')
+```
+
+```{r}
+#d
+
+pcs_mat1 <- prcomp(mat1)
+
+pcs_mat1
+```
+
